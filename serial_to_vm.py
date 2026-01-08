@@ -202,7 +202,7 @@ def main():
             if not line:
                 continue
 
-            print(f"📥 RX: {line}")
+            print(f"RX: {line}")
 
             payload = parse_any(line)
             if not payload:
@@ -223,7 +223,7 @@ def main():
             except:
                 pass
         except Exception as e:
-            print(f"❌ Erreur: {e}")
+            print(f"Erreur: {e}")
             time.sleep(1)
 if __name__ == "__main__":
     main()
