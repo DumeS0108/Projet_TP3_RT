@@ -164,7 +164,7 @@ def post_gps(payload: Dict[str, Any]) -> bool:
             return True
 
         if r.status_code in (401, 403):
-            print("🔁 Token expiré/invalide -> relogin...")
+            print("Token expiré/invalide -> relogin...")
             TOKEN = None
             if login():
                 r2 = SESSION.post(GPS_URL, json=payload, headers=headers(), timeout=8)
@@ -206,7 +206,7 @@ def main():
 
             payload = parse_any(line)
             if not payload:
-                print("↪️ Ignoré (pas de LAT/LON détectables)")
+                print("Ignoré (pas de LAT/LON détectables)")
                 continue
 
             if post_gps(payload):
