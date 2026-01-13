@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Carte vers Arduino</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        #map { height: 600px; width: 100%; border-radius: 10px; }
+        body { font-family: sans-serif; text-align: center; }
+    </style>
+</head>
+<body>
+    <h1>Cliquez sur la carte</h1>
+    <div id="map"></div>
+    <p id="status">En attente d'un clic...</p>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        const map = L.map('map').setView([46.2276, 2.2137], 5); // Centré sur la France
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        map.on('click', function(e) {
+            const coords = { lat: e.latlng.lat, lng: e.latlng.lng };
+            document.getElementById('status').innerText = `Envoi de : ${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}`;
+
+            fetch('/send-coords', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(coords)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === 'success') document.getElementById('status').innerText += " ✅ Envoyé !";
+            })
+            .catch(err => console.error('Erreur:', err));
+        });
+    </script>
+</body>
+</html>
