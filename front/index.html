@@ -1,41 +1,36 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-    <title>Carte vers Arduino</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <style>
-        #map { height: 600px; width: 100%; border-radius: 10px; }
-        body { font-family: sans-serif; text-align: center; }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IoT Control Panel - GPS Relay</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <h1>Cliquez sur la carte</h1>
-    <div id="map"></div>
-    <p id="status">En attente d'un clic...</p>
 
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script>
-        const map = L.map('map').setView([46.2276, 2.2137], 5); // Centré sur la France
+    <div id="sidebar">
+        <h2>IoT Dashboard</h2>
+        
+        <div class="status-card">
+            <div>Statut Serveur: <span id="server-status">🔴 Déconnecté</span></div>
+            <hr>
+            <div>Dernier clic :</div>
+            <div id="current-coords" class="coords-display">Aucun point sélectionné</div>
+        </div>
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap'
-        }).addTo(map);
+        <h3>Console de Relayage</h3>
+        <div id="log-container">
+            <div class="log-entry">Système prêt...</div>
+        </div>
+    </div>
 
-        map.on('click', function(e) {
-            const coords = { lat: e.latlng.lat, lng: e.latlng.lng };
-            document.getElementById('status').innerText = `Envoi de : ${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}`;
+    <div id="map-container">
+        <div id="map"></div>
+    </div>
 
-            fetch('/send-coords', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(coords)
-            })
-            .then(res => res.json())
-            .then(data => {
-                if(data.status === 'success') document.getElementById('status').innerText += " ✅ Envoyé !";
-            })
-            .catch(err => console.error('Erreur:', err));
-        });
-    </script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
