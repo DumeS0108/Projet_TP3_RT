@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>GeoLoc Relay - Control Panel</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="api.css" /> </head>
+<body>
+    <div id="sidebar">
+        <h2>GeoLoc Relay</h2>
+        <div class="status-card">
+            <p>Statut Liaison : <span id="server-status">🔴 Déconnecté</span></p>
+            <hr>
+            <p><strong>Cible actuelle :</strong></p>
+            <p id="current-coords">Cliquez sur la carte pour envoyer</p>
+        </div>
+        <h3>Logs Transmission</h3>
+        <div id="log-container"></div>
+    </div>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="api.js"></script> </body>
+</html>

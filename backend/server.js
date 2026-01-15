@@ -4,7 +4,7 @@ const mysql = require('mysql2');
 const bcrypt = require('bcrypt');
 const cors = require('cors');
 const net = require('net');
-
+const path = require('path'); 
 const app = express();
 const HTTP_PORT = 3000;
 const TCP_PORT = 4000;
@@ -12,11 +12,19 @@ const TCP_PORT = 4000;
 app.use(cors());
 app.use(express.json());
 
+// --- GESTION DES FICHIERS STATIQUES ---
+
+// 1. Donne accès au contenu du dossier front (api.html, api.js, api.css)
+app.use('/front', express.static(path.join(__dirname, '../front')));
+
+// 2. Donne accès à la racine (pour charger index.html et ses ressources directes)
+app.use(express.static(path.join(__dirname, '../')));
+
 // --- CONFIGURATION BDD (Sur la VM) ---
 const db = mysql.createConnection({
-    host: '172.29.19.53',      // Local par rapport à la VM
-    user: 'root',           // UTILISATEUR MYSQL (Souvent 'root')
-    password: 'root', // METS TON MOT DE PASSE ICI
+    host: '172.29.19.53',      //
+    user: 'root',           
+    password: 'root', 
     database: 'projet_iot_db'
 });
 
@@ -46,12 +54,16 @@ const tcpServer = net.createServer((socket) => {
     });
 });
 
-// Écoute sur 0.0.0.0 pour être accessible depuis ton PC Windows
 tcpServer.listen(TCP_PORT, '0.0.0.0', () => {
     console.log(`Serveur TCP prêt sur 172.29.19.53:${TCP_PORT}`);
 });
 
 // --- API WEB (HTTP) ---
+
+// Route par défaut : Envoie le fichier de login (index.html à la racine)
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '../index.html'));
+});
 
 // Inscription
 app.post('/api/register', async (req, res) => {
@@ -96,7 +108,7 @@ app.post('/api/send-coords', (req, res) => {
     }
 });
 
-// Écoute sur 0.0.0.0
+// Lancement du serveur HTTP
 app.listen(HTTP_PORT, '0.0.0.0', () => {
     console.log(`API Web prête sur http://172.29.19.53:${HTTP_PORT}`);
 });
