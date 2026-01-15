@@ -1,43 +1,74 @@
-// Configuration de l'URL de ton serveur (VM Debian)
-const API_URL = "http://172.29.19.53:3000"; 
+// --- 1. SÉCURITÉ IMMÉDIATE ---
+// On vérifie le token avant même de charger le reste
+const token = localStorage.getItem('token');
 
-// Initialisation de la carte Leaflet
-const map = L.map('map').setView([46.2276, 2.2137], 6);
+if (!token) {
+    // Pas de token ? On dégage direct.
+    window.location.href = "../index.html";
+    // On lance une erreur volontaire pour stopper l'exécution du reste du script
+    throw new Error("Redirection: Token manquant");
+}
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors'
-}).addTo(map);
-
+// --- 2. CONFIGURATION ---
+const API_URL = ""; 
 let marker = null;
+let map = null;
 
-// Gestion du clic sur la carte
-map.on('click', async (e) => {
-    const { lat, lng } = e.latlng;
+// --- 3. INITIALISATION (Une fois le HTML chargé) ---
+document.addEventListener('DOMContentLoaded', () => {
     
-    // Récupération du token JWT stocké dans le localStorage lors du login
-    const token = localStorage.getItem('token');
+    // A. Initialisation de la carte Leaflet
+    map = L.map('map').setView([46.2276, 2.2137], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
 
-    // Si aucun token n'est trouvé, on redirige vers le login à la racine
-    if (!token) {
-        alert("Session absente. Veuillez vous connecter.");
-        window.location.href = "../index.html"; 
-        return;
+    // B. Écouteur sur le clic de la carte
+    map.on('click', handleMapClick);
+
+    // C. Écouteur sur le bouton de déconnexion
+    const btnLogout = document.getElementById('logout-btn');
+    if (btnLogout) {
+        btnLogout.addEventListener('click', logout);
     }
 
-    // Mise à jour visuelle du marqueur et de l'affichage des coordonnées
+    // D. GESTION DE L'AFFICHAGE (Correction bug "Carte Grise")
+    // Maintenant que tout est prêt, on affiche la page
+    document.body.style.display = "flex";
+    
+    // On dit à Leaflet de recalculer sa taille car le conteneur vient d'apparaître
+    setTimeout(() => {
+        map.invalidateSize();
+    }, 200);
+});
+
+// --- 4. FONCTIONS LOGIQUES ---
+
+// Fonction de déconnexion
+function logout() {
+    localStorage.removeItem('token');
+    window.location.href = "../index.html";
+}
+
+// Fonction appelée lors du clic sur la carte
+async function handleMapClick(e) {
+    const { lat, lng } = e.latlng;
+
+    // Mise à jour marqueur
     if (marker) marker.setLatLng(e.latlng);
     else marker = L.marker(e.latlng).addTo(map);
 
+    // Mise à jour texte
     document.getElementById('current-coords').innerHTML = 
-        `Latitude: ${lat.toFixed(5)}<br>Longitude: ${lng.toFixed(5)}`;
+        `Lat: ${lat.toFixed(5)}<br>Lng: ${lng.toFixed(5)}`;
 
+    // Envoi au serveur
     try {
-        // Envoi des coordonnées au serveur avec le token d'autorisation
         const response = await fetch(`${API_URL}/api/send-coords`, {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}` // Transmission du token au "Gardien"
+                'Authorization': `Bearer ${token}` // On réutilise le token vérifié en haut
             },
             body: JSON.stringify({ lat, lng })
         });
@@ -46,33 +77,14 @@ map.on('click', async (e) => {
 
         if (response.ok) {
             document.getElementById('server-status').innerText = "🟢 WiFi Relay OK";
-            console.log("Coordonnées relayées au matériel.");
         } else if (response.status === 401 || response.status === 403) {
-            // Si le token est invalide ou expiré
-            document.getElementById('server-status').innerText = "🔐 Session expirée";
-            alert("Votre session a expiré. Redirection vers la page de connexion.");
-            localStorage.removeItem('token');
-            window.location.href = "../index.html"; // Remonte à la racine
+            alert("Session expirée.");
+            logout(); // On appelle la fonction de déconnexion
         } else {
             document.getElementById('server-status').innerText = "⚠️ Erreur: " + (data.error || "Inconnue");
         }
     } catch (err) {
         document.getElementById('server-status').innerText = "🔴 Serveur Injoignable";
-        console.error("Erreur de communication:", err);
+        console.error(err);
     }
-});
-
-// Si on est encore là, c'est qu'on a le token. On affiche la page.
-    document.body.style.display = "flex"; // Utilise flex pour correspondre à ton CSS
-
-    // FORCE LE REDESSIN DE LA CARTE
-    if (typeof map !== 'undefined') {
-        setTimeout(() => {
-            map.invalidateSize();
-        }, 100);
-    }
-
-    function logout() {
-        localStorage.removeItem('token');
-        window.location.href = "../index.html";
-    }
+}
