@@ -1,41 +1,69 @@
+<!DOCTYPE html>
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>GeoLoc - Connexion</title>
+    <title>GeoLoc - Connexion Sécurisée</title>
     <link rel="stylesheet" href="front/api.css">
     <style>
-        .auth-box { width: 320px; margin: 80px auto; padding: 30px; background: #2c3e50; color: white; border-radius: 10px; text-align: center; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 5px; border: none; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #27ae60; color: white; border: none; cursor: pointer; border-radius: 5px; font-weight: bold; }
-        .link { display: block; margin-top: 15px; color: #3498db; text-decoration: none; font-size: 0.9em; }
+        .auth-container { background: #2c3e50; padding: 40px; border-radius: 15px; text-align: center; width: 350px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 5px; border: none; box-sizing: border-box; background: #ecf0f1; }
+        button { width: 100%; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        button:hover { background: #2ecc71; }
+        #status-msg { margin-top: 15px; font-size: 0.9em; min-height: 20px; }
+        .error { color: #e74c3c; }
+        .success { color: #2ecc71; }
     </style>
 </head>
-<body>
-    <div class="auth-box">
-        <h2>GeoLoc Relay - Connexion</h2>
-        <input type="email" id="email" placeholder="Email">
-        <input type="password" id="password" placeholder="Mot de passe">
-        <button onclick="login()">Se connecter</button>
-        <a href="front/register.html" class="link">Pas encore de compte ? S'inscrire</a>
+<body style="background: #1a1a1a; color: white; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;">
+
+    <div class="auth-container">
+        <h2 style="margin-top: 0;">GeoLoc Relay</h2>
+        <p style="color: #bdc3c7;">Accès sécurisé par JWT</p>
+        
+        <input type="email" id="email" placeholder="Email" required>
+        <input type="password" id="password" placeholder="Mot de passe" required>
+        
+        <button onclick="doLogin()">SE CONNECTER</button>
+        
+        <p id="status-msg"></p>
+        
+        <hr style="border: 0; border-top: 1px solid #34495e; margin: 20px 0;">
+        <a href="front/register.html" style="color: #3498db; text-decoration: none; font-size: 0.9em;">Créer un nouveau compte</a>
     </div>
 
     <script>
-        const API_URL = "http://172.29.19.53:3000";
-        async function login() {
+        async function doLogin() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
+            const msgBox = document.getElementById('status-msg');
 
-            const res = await fetch(`${API_URL}/api/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
-            });
-            
-            if (res.ok) {
-                // Redirection vers le dossier front pour la carte
-                window.location.href = "front/api.html";
-            } else {
-                alert("Identifiants incorrects");
+            msgBox.className = "";
+            msgBox.innerText = "Vérification en cours...";
+
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    // On stocke le TOKEN JWT reçu du serveur
+                    localStorage.setItem('token', data.token);
+                    msgBox.className = "success";
+                    msgBox.innerText = "✅ Connexion réussie ! Redirection...";
+                    setTimeout(() => window.location.href = "front/api.html", 1000);
+                } else {
+                    msgBox.className = "error";
+                    msgBox.innerText = "❌ " + (data.error || "Identifiants invalides");
+                }
+            } catch (err) {
+                msgBox.className = "error";
+                msgBox.innerText = "❌ Serveur injoignable";
             }
         }
     </script>
 </body>
+</html>

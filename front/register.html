@@ -5,38 +5,56 @@
     <title>GeoLoc - Inscription</title>
     <link rel="stylesheet" href="api.css">
     <style>
-        .auth-box { width: 320px; margin: 80px auto; padding: 30px; background: #2c3e50; color: white; border-radius: 10px; text-align: center; }
+        .auth-container { background: #2c3e50; padding: 40px; border-radius: 15px; text-align: center; width: 350px; }
         input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 5px; border: none; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #3498db; color: white; border: none; cursor: pointer; border-radius: 5px; font-weight: bold; }
-        .link { display: block; margin-top: 15px; color: #bdc3c7; text-decoration: none; }
+        button { width: 100%; padding: 12px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        #status-msg { margin-top: 15px; }
+        .error { color: #ff6b6b; }
+        .success { color: #1dd1a1; }
     </style>
 </head>
-<body>
-    <div class="auth-box">
+<body style="background: #1a1a1a; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;">
+
+    <div class="auth-container">
         <h2>Créer un compte</h2>
-        <input type="email" id="email" placeholder="Votre Email">
-        <input type="password" id="password" placeholder="Choisir un mot de passe">
-        <button onclick="register()">S'inscrire</button>
-        <a href="login.html" class="link">Déjà inscrit ? Se connecter</a>
+        <p style="color: #bdc3c7;">Rejoignez le réseau GeoLoc</p>
+        
+        <input type="email" id="email" placeholder="Votre Email" required>
+        <input type="password" id="password" placeholder="Choisir un mot de passe" required>
+        
+        <button onclick="doRegister()">S'INSCRIRE</button>
+        
+        <p id="status-msg"></p>
+        
+        <a href="../index.html" style="display: block; margin-top: 20px; color: #bdc3c7; text-decoration: none; font-size: 0.8em;">Déjà un compte ? Se connecter</a>
     </div>
 
     <script>
-        const API_URL = "http://172.29.19.53:3000";
-        async function register() {
+        async function doRegister() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
+            const msgBox = document.getElementById('status-msg');
 
-            const res = await fetch(`${API_URL}/api/register`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
-            });
-            if (res.ok) {
-                alert("Compte créé avec succès !");
-                window.location.href = "login.html";
-            } else {
+            try {
+                const res = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
                 const data = await res.json();
-                alert("Erreur : " + data.error);
+
+                if (res.ok) {
+                    msgBox.className = "success";
+                    msgBox.innerText = "✅ Compte créé avec succès !";
+                    setTimeout(() => window.location.href = "../index.html", 1500);
+                } else {
+                    msgBox.className = "error";
+                    msgBox.innerText = "❌ " + (data.error || "Erreur d'inscription");
+                }
+            } catch (err) {
+                msgBox.className = "error";
+                msgBox.innerText = "❌ Erreur réseau";
             }
         }
     </script>
