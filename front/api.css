@@ -1,4 +1,32 @@
-body { margin: 0; display: flex; height: 100vh; font-family: sans-serif; }
-#sidebar { width: 300px; background: #2c3e50; color: white; padding: 20px; z-index: 1000; }
-#map { flex-grow: 1; height: 100%; }
-.status-card { background: #34495e; padding: 10px; border-radius: 5px; margin-top: 20px; }
+/* api.css */
+body { 
+    margin: 0; 
+    display: flex; 
+    height: 100vh; 
+    width: 100vw; /* Ajouté pour garantir la largeur totale */
+    font-family: sans-serif; 
+    overflow: hidden; /* Évite les barres de défilement inutiles */
+}
+
+#sidebar { 
+    width: 300px; 
+    min-width: 300px; /* Empêche la barre de rétrécir */
+    background: #2c3e50; 
+    color: white; 
+    padding: 20px; 
+    z-index: 1000; 
+    box-sizing: border-box;
+}
+
+#map { 
+    flex-grow: 1; 
+    height: 100%; 
+    background: #ddd; /* Couleur de fond en attendant le chargement */
+}
+
+.status-card { 
+    background: #34495e; 
+    padding: 10px; 
+    border-radius: 5px; 
+    margin-top: 20px; 
+}
