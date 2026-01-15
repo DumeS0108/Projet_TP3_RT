@@ -4,23 +4,21 @@ const mysql = require('mysql2');
 const bcrypt = require('bcrypt');
 const cors = require('cors');
 const net = require('net');
-const path = require('path'); 
+const path = require('path');
+const jwt = require('jsonwebtoken'); // <--- AJOUT : Pour gérer les tokens
+
 const app = express();
-const HTTP_PORT = process.env.HTTP_PORT;
-const TCP_PORT = process.env.TCP_PORT;
+const HTTP_PORT = process.env.HTTP_PORT || 3000;
+const TCP_PORT = process.env.TCP_PORT || 4000;
 
 app.use(cors());
 app.use(express.json());
 
 // --- GESTION DES FICHIERS STATIQUES ---
-
-// 1. Donne accès au contenu du dossier front (api.html, api.js, api.css)
 app.use('/front', express.static(path.join(__dirname, '../front')));
-
-// 2. Donne accès à la racine (pour charger index.html et ses ressources directes)
 app.use(express.static(path.join(__dirname, '../')));
 
-// --- CONFIGURATION BDD (Sur la VM) ---
+// --- CONFIGURATION BDD ---
 const db = mysql.createConnection({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
@@ -32,6 +30,21 @@ db.connect(err => {
     if (err) console.error('Erreur connexion BDD:', err);
     else console.log('Connecté à MySQL sur la VM');
 });
+
+// --- MIDDLEWARE DE SÉCURITÉ (Le Gardien) --- <--- AJOUT
+function authenticateToken(req, res, next) {
+    const authHeader = req.headers['authorization'];
+    // On récupère le token après "Bearer "
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (token == null) return res.status(401).json({ error: "Accès refusé. Token manquant." });
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+        if (err) return res.status(403).json({ error: "Token invalide ou expiré." });
+        req.user = user; // On stocke les infos du user pour la suite
+        next(); // On laisse passer
+    });
+}
 
 // --- SERVEUR TCP (Pour le C++) ---
 let hardwareSocket = null;
@@ -60,7 +73,6 @@ tcpServer.listen(TCP_PORT, '0.0.0.0', () => {
 
 // --- API WEB (HTTP) ---
 
-// Route par défaut : Envoie le fichier de login (index.html à la racine)
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../index.html'));
 });
@@ -68,30 +80,44 @@ app.get('/', (req, res) => {
 // Inscription
 app.post('/api/register', async (req, res) => {
     const { email, password } = req.body;
-    const hash = await bcrypt.hash(password, 10);
-
-    db.query('INSERT INTO users (email, password) VALUES (?, ?)', [email, hash], (err) => {
-        if (err) return res.status(500).json({ error: err.message });
-        res.status(201).json({ message: 'Utilisateur créé' });
-    });
+    
+    try {
+        const hash = await bcrypt.hash(password, 10);
+        db.query('INSERT INTO users (email, password) VALUES (?, ?)', [email, hash], (err) => {
+            if (err) return res.status(500).json({ error: err.message });
+            res.status(201).json({ message: 'Utilisateur créé' });
+        });
+    } catch (error) {
+        res.status(500).json({ error: "Erreur serveur" });
+    }
 });
 
-// Connexion
+// Connexion (Génération du Token)
 app.post('/api/login', (req, res) => {
     const { email, password } = req.body;
     
     db.query('SELECT * FROM users WHERE email = ?', [email], (err, results) => {
-        if (err || results.length === 0) return res.status(401).json({ error: 'Inconnu' });
+        if (err || results.length === 0) return res.status(401).json({ error: 'Utilisateur inconnu' });
         
         bcrypt.compare(password, results[0].password, (err, isMatch) => {
-            if (isMatch) res.json({ message: 'Login OK', userId: results[0].id });
+            if (isMatch) {
+                // <--- MODIFICATION : On génère le token ici
+                const token = jwt.sign(
+                    { id: results[0].id, email: results[0].email }, 
+                    process.env.JWT_SECRET, 
+                    { expiresIn: '2h' }
+                );
+                // On renvoie le token au Front
+                res.json({ message: 'Login OK', token: token });
+            } 
             else res.status(401).json({ error: 'Mauvais mot de passe' });
         });
     });
 });
 
-// Réception coordonnées depuis le Web -> Envoi vers C++
-app.post('/api/send-coords', (req, res) => {
+// Réception coordonnées (PROTÉGÉE PAR TOKEN)
+// On ajoute 'authenticateToken' avant la fonction
+app.post('/api/send-coords', authenticateToken, (req, res) => { // <--- AJOUT du gardien
     const { lat, lng } = req.body;
     
     // 1. Sauvegarde BDD
