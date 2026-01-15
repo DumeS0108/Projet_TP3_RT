@@ -6,8 +6,8 @@ const cors = require('cors');
 const net = require('net');
 const path = require('path'); 
 const app = express();
-const HTTP_PORT = 3000;
-const TCP_PORT = 4000;
+const HTTP_PORT = process.env.HTTP_PORT;
+const TCP_PORT = process.env.TCP_PORT;
 
 app.use(cors());
 app.use(express.json());
@@ -22,10 +22,10 @@ app.use(express.static(path.join(__dirname, '../')));
 
 // --- CONFIGURATION BDD (Sur la VM) ---
 const db = mysql.createConnection({
-    host: '172.29.19.53',      //
-    user: 'root',           
-    password: 'root', 
-    database: 'projet_iot_db'
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASS,
+    database: process.env.DB_NAME
 });
 
 db.connect(err => {
