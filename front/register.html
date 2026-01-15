@@ -4,14 +4,8 @@
     <meta charset="UTF-8">
     <title>GeoLoc - Inscription</title>
     <link rel="stylesheet" href="api.css">
-    <style>
-        .auth-container { background: #2c3e50; padding: 40px; border-radius: 15px; text-align: center; width: 350px; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 5px; border: none; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        #status-msg { margin-top: 15px; }
-        .error { color: #ff6b6b; }
-        .success { color: #1dd1a1; }
-    </style>
+    <link rel="stylesheet" href="front/css/register.css">
+    
 </head>
 <body style="background: #1a1a1a; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;">
 
@@ -28,35 +22,6 @@
         
         <a href="../index.html" style="display: block; margin-top: 20px; color: #bdc3c7; text-decoration: none; font-size: 0.8em;">Déjà un compte ? Se connecter</a>
     </div>
-
-    <script>
-        async function doRegister() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const msgBox = document.getElementById('status-msg');
-
-            try {
-                const res = await fetch('/api/register', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
-
-                const data = await res.json();
-
-                if (res.ok) {
-                    msgBox.className = "success";
-                    msgBox.innerText = "✅ Compte créé avec succès !";
-                    setTimeout(() => window.location.href = "../index.html", 1500);
-                } else {
-                    msgBox.className = "error";
-                    msgBox.innerText = "❌ " + (data.error || "Erreur d'inscription");
-                }
-            } catch (err) {
-                msgBox.className = "error";
-                msgBox.innerText = "❌ Erreur réseau";
-            }
-        }
-    </script>
+        <script src="js/register.js"></script>
 </body>
 </html>

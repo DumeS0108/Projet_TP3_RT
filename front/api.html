@@ -4,24 +4,7 @@
     <meta charset="UTF-8">
     <title>GeoLoc Relay - Control Panel</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="api.css" /> 
-
-   <script>
-    // Si on est encore là, c'est qu'on a le token. On affiche la page.
-    document.body.style.display = "flex"; // Utilise flex pour correspondre à ton CSS
-
-    // FORCE LE REDESSIN DE LA CARTE
-    if (typeof map !== 'undefined') {
-        setTimeout(() => {
-            map.invalidateSize();
-        }, 100);
-    }
-
-    function logout() {
-        localStorage.removeItem('token');
-        window.location.href = "../index.html";
-    }
-    </script>
+    <link rel="stylesheet" href="front/css/api.css">
 </head>
 
 <body style="display: none;">

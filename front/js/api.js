@@ -61,3 +61,18 @@ map.on('click', async (e) => {
         console.error("Erreur de communication:", err);
     }
 });
+
+// Si on est encore là, c'est qu'on a le token. On affiche la page.
+    document.body.style.display = "flex"; // Utilise flex pour correspondre à ton CSS
+
+    // FORCE LE REDESSIN DE LA CARTE
+    if (typeof map !== 'undefined') {
+        setTimeout(() => {
+            map.invalidateSize();
+        }, 100);
+    }
+
+    function logout() {
+        localStorage.removeItem('token');
+        window.location.href = "../index.html";
+    }

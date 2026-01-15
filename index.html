@@ -3,23 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <title>GeoLoc - Connexion Sécurisée</title>
-    <link rel="stylesheet" href="front/api.css">
+    <link rel="stylesheet" href="front/css/login.css">
+    <script src="front/js/login.js" defer></script>
     
-    <script>
-        if (localStorage.getItem('token')) {
-            window.location.href = "front/api.html";
-        }
-    </script>
-
-    <style>
-        .auth-container { background: #2c3e50; padding: 40px; border-radius: 15px; text-align: center; width: 350px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 5px; border: none; box-sizing: border-box; background: #ecf0f1; }
-        button { width: 100%; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        button:hover { background: #2ecc71; }
-        #status-msg { margin-top: 15px; font-size: 0.9em; min-height: 20px; }
-        .error { color: #e74c3c; }
-        .success { color: #2ecc71; }
-    </style>
 </head>
 <body style="background: #1a1a1a; color: white; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;">
 
@@ -38,39 +24,6 @@
         <a href="front/register.html" style="color: #3498db; text-decoration: none; font-size: 0.9em;">Créer un nouveau compte</a>
     </div>
 
-    <script>
-        async function doLogin() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const msgBox = document.getElementById('status-msg');
-
-            msgBox.className = "";
-            msgBox.innerText = "Vérification en cours...";
-
-            try {
-                const res = await fetch('http://172.29.19.53:3000/api/login', { 
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
-        });
-
-                const data = await res.json();
-
-                if (res.ok) {
-                    // On stocke le TOKEN JWT reçu du serveur
-                    localStorage.setItem('token', data.token);
-                    msgBox.className = "success";
-                    msgBox.innerText = "✅ Connexion réussie ! Redirection...";
-                    setTimeout(() => window.location.href = "front/api.html", 1000);
-                } else {
-                    msgBox.className = "error";
-                    msgBox.innerText = "❌ " + (data.error || "Identifiants invalides");
-                }
-            } catch (err) {
-                msgBox.className = "error";
-                msgBox.innerText = "❌ Serveur injoignable";
-            }
-        }
-    </script>
+    <script src="js/api.js"></script>
 </body>
 </html>
