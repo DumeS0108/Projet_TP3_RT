@@ -7,7 +7,8 @@ async function doRegister() {
     msgBox.innerText = "Création du compte...";
 
     try {
-        const res = await fetch('/api/register', {
+        // CORRECTION : Port 3000 obligatoire
+        const res = await fetch('http://172.29.19.53:3000/api/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
