@@ -1,6 +1,5 @@
-/**
- * Gère la création d'un nouveau compte utilisateur
- */
+// Gère la création d'un nouveau compte utilisateur
+
 async function doRegister() {
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;

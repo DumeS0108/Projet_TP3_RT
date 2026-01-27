@@ -1,6 +1,6 @@
-/**
- * Gère l'authentification de l'utilisateur
- */
+
+// Gère l'authentification de l'utilisateur
+
 async function doLogin() {
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
@@ -10,7 +10,7 @@ async function doLogin() {
     msgBox.innerText = "Vérification en cours...";
 
     try {
-        // Envoi des identifiants au serveur Node.js (Port 3000)
+        // Envoi des identifiants au serveur Node.js 
         const res = await fetch('http://172.29.19.53:3000/api/login', { 
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
