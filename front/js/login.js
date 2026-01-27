@@ -1,3 +1,6 @@
+/**
+ * Gère l'authentification de l'utilisateur
+ */
 async function doLogin() {
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
@@ -7,7 +10,7 @@ async function doLogin() {
     msgBox.innerText = "Vérification en cours...";
 
     try {
-        // CORRECTION IMPORTANTE : On vise le port 3000 explicitement
+        // Envoi des identifiants au serveur Node.js (Port 3000)
         const res = await fetch('http://172.29.19.53:3000/api/login', { 
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -17,10 +20,10 @@ async function doLogin() {
         const data = await res.json();
 
         if (res.ok) {
+            // Sauvegarde du Token JWT et redirection vers l'interface
             localStorage.setItem('token', data.token);
             msgBox.className = "success";
             msgBox.innerText = "✅ Connexion réussie ! Redirection...";
-            // On redirige vers api.html (chemin relatif depuis index.html)
             setTimeout(() => window.location.href = "front/api.html", 1000);
         } else {
             msgBox.className = "error";
@@ -29,11 +32,11 @@ async function doLogin() {
     } catch (err) {
         console.error(err);
         msgBox.className = "error";
-        msgBox.innerText = "❌ Serveur Node.js injoignable (Port 3000 ?)";
+        msgBox.innerText = "❌ Serveur Node.js injoignable";
     }
 }
 
-// Vérification auto si déjà connecté
+// Sécurité : redirection automatique si un token valide existe déjà
 if (localStorage.getItem('token')) {
     window.location.href = "front/api.html";
 }

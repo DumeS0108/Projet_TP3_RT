@@ -1,4 +1,6 @@
-// Fonction d'inscription
+/**
+ * Gère la création d'un nouveau compte utilisateur
+ */
 async function doRegister() {
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
@@ -7,7 +9,7 @@ async function doRegister() {
     msgBox.innerText = "Création du compte...";
 
     try {
-        // CORRECTION : Port 3000 obligatoire
+        // Enregistrement des données dans la base via l'API
         const res = await fetch('http://172.29.19.53:3000/api/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -19,7 +21,7 @@ async function doRegister() {
         if (res.ok) {
             msgBox.className = "success";
             msgBox.innerText = "✅ Compte créé avec succès !";
-            // On renvoie l'utilisateur vers le login (racine)
+            // Retour à l'accueil pour se connecter
             setTimeout(() => window.location.href = "../index.html", 1500);
         } else {
             msgBox.className = "error";

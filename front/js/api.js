@@ -1,22 +1,24 @@
-// --- 1. SÉCURITÉ IMMÉDIATE ---
+// --- PROTECTION DE LA ROUTE ---
+// Vérifie la présence du token avant d'afficher la page
 const token = localStorage.getItem('token');
 if (!token) {
     window.location.href = "../index.html";
     throw new Error("Redirection: Token manquant");
 }
 
-// --- 2. CONFIGURATION ---
 const API_URL = "http://172.29.19.53:3000";
 let marker = null;
 let map = null;
 
-// --- 3. INITIALISATION ---
+// --- INITIALISATION DE L'INTERFACE (Leaflet) ---
 document.addEventListener('DOMContentLoaded', () => {
+    // Configuration de la carte centrée sur la France
     map = L.map('map').setView([46.2276, 2.2137], 6);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
+    // Écouteurs d'événements
     map.on('click', handleMapClick);
 
     const btnLogout = document.getElementById('logout-btn');
@@ -24,37 +26,38 @@ document.addEventListener('DOMContentLoaded', () => {
         btnLogout.addEventListener('click', logout);
     }
 
+    // Ajustement de l'affichage après le chargement
     document.body.style.display = "flex";
-    setTimeout(() => {
-        map.invalidateSize();
-    }, 200);
+    setTimeout(() => { map.invalidateSize(); }, 200);
 });
 
-// --- 4. FONCTIONS LOGIQUES ---
+// --- LOGIQUE MÉTIER ---
 
 function logout() {
     localStorage.removeItem('token');
     window.location.href = "../index.html";
 }
 
+/**
+ * Capture le clic sur la carte et synchronise avec le serveur/matériel
+ */
 async function handleMapClick(e) {
     const { lat, lng } = e.latlng;
 
-    // Mise à jour marqueur
+    // Mise à jour visuelle immédiate du marqueur
     if (marker) marker.setLatLng(e.latlng);
     else marker = L.marker(e.latlng).addTo(map);
 
-    // Feedback immédiat (en attendant la réponse du serveur)
     document.getElementById('current-coords').innerHTML = 
         `Lat: ${lat.toFixed(5)}<br>Lng: ${lng.toFixed(5)}<br><em>Recherche ville...</em>`;
 
-    // Envoi au serveur
     try {
+        // Envoi des coordonnées au serveur pour traitement (Reverse Geocoding + Relais TCP)
         const response = await fetch(`${API_URL}/api/send-coords`, {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
+                'Authorization': `Bearer ${token}` // Authentification requise
             },
             body: JSON.stringify({ lat, lng })
         });
@@ -62,13 +65,10 @@ async function handleMapClick(e) {
         const data = await response.json();
 
         if (response.ok) {
+            // Affichage du retour serveur (Nom de la ville identifiée)
             document.getElementById('server-status').innerText = "🟢 WiFi Relay OK";
-            
-            // --- MISE À JOUR : Affichage de la ville reçue ---
             document.getElementById('current-coords').innerHTML = 
-                `Lat: ${lat.toFixed(5)}<br>
-                 Lng: ${lng.toFixed(5)}<br>
-                 <strong>📍 ${data.city}</strong>`;
+                `Lat: ${lat.toFixed(5)}<br>Lng: ${lng.toFixed(5)}<br><strong>📍 ${data.city}</strong>`;
                  
         } else if (response.status === 401 || response.status === 403) {
             alert("Session expirée.");
@@ -77,6 +77,7 @@ async function handleMapClick(e) {
             document.getElementById('server-status').innerText = "⚠️ Erreur: " + (data.error || "Inconnue");
         }
     } catch (err) {
+        // Gestion de l'absence du serveur (RT)
         document.getElementById('server-status').innerText = "🔴 Serveur Injoignable";
         console.error(err);
     }
